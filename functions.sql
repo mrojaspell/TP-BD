@@ -1,50 +1,51 @@
-DROP TABLE IF EXISTS clientes_banco;
-DROP TABLE IF EXISTS prestamos_banco;
 DROP TABLE IF EXISTS pagos_cuotas;
+DROP TABLE IF EXISTS prestamos_banco;
+DROP TABLE IF EXISTS clientes_banco;
 DROP TABLE IF EXISTS backup;
 
 CREATE TABLE clientes_banco
 (
-    codigo INT NOT NULL,
-    dni INT NOT NULL,
-    telefono INT NOT NULL,
-    nombre char(20) NOT NULL,
-    direccion CHAR(25) NOT NULL,
-    PRIMARY KEY (codigo, dni)
+    Codigo INT NOT NULL,
+    Dni INT NOT NULL,
+    Telefono INT NOT NULL,
+    Nombre char(20) NOT NULL,
+    Direccion CHAR(25) NOT NULL,
+    PRIMARY KEY (Codigo)
 );
 
 CREATE TABLE prestamos_banco
 (
-    codigo INT NOT NULL,
-    fecha DATE NOT NULL,
-    codigo_cliente INT NOT NULL,
-    importe INT NOT NULL,
-    PRIMARY KEY (codigo),
-    FOREIGN KEY (codigo_cliente) REFERENCES clientes_banco
+    Codigo INT NOT NULL,
+    Fecha DATE NOT NULL,
+    Codigo_Cliente INT NOT NULL,
+    Importe INT NOT NULL,
+    PRIMARY KEY (Codigo),
+    FOREIGN KEY (Codigo_Cliente) REFERENCES clientes_banco
 );
 
 CREATE TABLE pagos_cuotas
 (
-    nro_cuota INT NOT NULL,
-    codigo_prestamo INT NOT NULL,
-    importe INT NOT NULL,
-    fecha DATE NOT NULL,
-    PRIMARY KEY (nro_cuota),
-    FOREIGN KEY (codigo_prestamo) REFERENCES prestamos_banco
+    Nro_Cuota INT NOT NULL,
+    Codigo_Prestamo INT NOT NULL,
+    Importe INT NOT NULL,
+    Fecha DATE NOT NULL,
+    PRIMARY KEY (Nro_Cuota),
+    FOREIGN KEY (Codigo_Prestamo) REFERENCES prestamos_banco
 );
 
 CREATE TABLE backup
 (
-    dni INT NOT NULL,
-    nombre CHAR(20) NOT NULL,
-    telefono INT NOT NULL,
-    cant_prestamos INT NOT NULL,
-    monto_prestamos INT NOT NULL,
-    monto_pago_cuentas INT NOT NULL,
-    pagos_pendientes BOOLEAN NOT NULL,
-    PRIMARY KEY (dni)
+    DNI INT NOT NULL,
+    NOMBRE CHAR(20) NOT NULL,
+    TELEFONO INT NOT NULL,
+    CANT_PRESTAMOS INT NOT NULL,
+    MONTO_PRESTAMOS INT NOT NULL,
+    MONTO_PAGO_CUENTAS INT NOT NULL,
+    IND_PAGOS_PENDIENTES BOOLEAN NOT NULL,
+    PRIMARY KEY (DNI)
 );
 
-COPY clientes_banco FROM 'C:\Users\machi\OneDrive\Escritorio\BD\TP-BD\clientes_banco.csv';
-COPY prestamos_banco FROM 'C:\Users\machi\OneDrive\Escritorio\BD\TP-BD\prestamos_banco.csv';
+\COPY clientes_banco FROM './clientes_banco.csv' DELIMITER ',' CSV HEADER;
+\COPY prestamos_banco FROM './prestamos_banco.csv' DELIMITER ',' CSV HEADER;
+\COPY pagos_cuotas FROM './pagos_cuotas.csv' DELIMITER ',' CSV HEADER;
 
