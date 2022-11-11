@@ -56,3 +56,63 @@ psql -h bd1.it.itba.edu.ar -U nombre PROOF
 \COPY prestamos_banco FROM './prestamos_banco.csv' DELIMITER ',' CSV HEADER;
 \COPY pagos_cuotas FROM './pagos_cuotas.csv' DELIMITER ',' CSV HEADER;
 */
+
+
+/* Pto D: TRIGGER */
+CREATE TRIGGER deleteTrigger
+        BEFORE DELETE ON clientes_banco
+    FOR EACH ROW
+    EXECUTE PROCEDURE fillBackup();
+END;
+
+CREATE OR REPLACE FUNCTION fillBackup()
+    RETURNS TRIGGER AS
+$$
+    DECLARE
+        DNI INT;
+        NOMBRE  VARCHAR(36);
+        TELEFONO    VARCHAR(18);
+        CANT_PRESTAMOS  INT := 0;
+        MONTO_PRESTAMOS INT  := 0;
+        MONTO_PAGO_CUENTAS   INT  := 0;
+
+        pago RECORD;
+        prestamo RECORD;
+
+        cPago CURSOR FOR
+            SELECT pa.importe FROM pagos_cuotas pa WHERE pa.codigo_prestamo = prestamo.codigo;
+
+        cPrestamo CURSOR FOR
+            SELECT pr.importe, pr.codigo FROM prestamos_banco pr WHERE pr.codigo_cliente=OLD.Codigo;
+
+        BEGIN
+
+        DNI=OLD.Dni;
+        NOMBRE=OLD.Nombre;
+        TELEFONO=OLD.telefono;
+
+        OPEN cPrestamo;
+        LOOP
+            FETCH cPrestamo INTO prestamo;
+            EXIT WHEN NOT FOUND;
+
+            MONTO_PRESTAMOS= MONTO_PRESTAMOS + prestamo.importe;
+            CANT_PRESTAMOS= CANT_PRESTAMOS +1;
+
+            OPEN cPago;
+            LOOP
+                FETCH cPago INTO pago;
+                EXIT WHEN NOT FOUND;
+
+                MONTO_PAGO_CUENTAS= MONTO_PAGO_CUENTAS+ pago.importe;
+
+            END LOOP;
+            CLOSE cPago;
+        END LOOP;
+        CLOSE cPrestamo;
+
+        INSERT INTO backup values(DNI, NOMBRE, TELEFONO, CANT_PRESTAMOS, MONTO_PRESTAMOS, MONTO_PAGO_CUENTAS, MONTO_PAGO_CUENTAS< MONTO_PRESTAMOS);
+        RETURN OLD;
+    END;
+
+$$ LANGUAGE plpgsql
