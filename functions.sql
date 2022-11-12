@@ -34,6 +34,7 @@ CREATE TABLE pagos_cuotas
 
 CREATE TABLE backup
 (
+    ENTRADA INT NOT NULL,
     DNI INT NOT NULL,
     NOMBRE VARCHAR NOT NULL,
     TELEFONO INT NOT NULL,
@@ -41,7 +42,7 @@ CREATE TABLE backup
     MONTO_PRESTAMOS INT NOT NULL,
     MONTO_PAGO_CUENTAS INT,
     IND_PAGOS_PENDIENTES BOOLEAN NOT NULL,
-    PRIMARY KEY (DNI)
+    PRIMARY KEY (ENTRADA)
 );
 /*
 
@@ -65,10 +66,17 @@ CREATE TRIGGER deleteTrigger
     EXECUTE PROCEDURE fillBackup();
 END;
 
+CREATE SEQUENCE backupID
+    START WITH 1
+    INCREMENT BY 1;
+END;
+
+
 CREATE OR REPLACE FUNCTION fillBackup()
     RETURNS TRIGGER AS
 $$
     DECLARE
+        ENTRADA INT;
         DNI INT;
         NOMBRE  VARCHAR(36);
         TELEFONO    VARCHAR(18);
@@ -86,7 +94,7 @@ $$
             SELECT pr.importe, pr.codigo FROM prestamos_banco pr WHERE pr.codigo_cliente=OLD.Codigo;
 
         BEGIN
-
+        ENTRADA=nextval(backupID);
         DNI=OLD.Dni;
         NOMBRE=OLD.Nombre;
         TELEFONO=OLD.telefono;
@@ -113,6 +121,6 @@ $$
 
         INSERT INTO backup values(DNI, NOMBRE, TELEFONO, CANT_PRESTAMOS, MONTO_PRESTAMOS, MONTO_PAGO_CUENTAS, MONTO_PAGO_CUENTAS< MONTO_PRESTAMOS);
         RETURN OLD;
-    END;
+    END
 
 $$ LANGUAGE plpgsql
