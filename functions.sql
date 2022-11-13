@@ -20,7 +20,7 @@ CREATE TABLE prestamos_banco
     Codigo_Cliente INT NOT NULL,
     Importe INT NOT NULL,
     PRIMARY KEY (Codigo),
-    FOREIGN KEY (Codigo_Cliente) REFERENCES clientes_banco
+    FOREIGN KEY (Codigo_Cliente) REFERENCES clientes_banco ON DELETE CASCADE
 );
 
 CREATE TABLE pagos_cuotas
@@ -29,7 +29,7 @@ CREATE TABLE pagos_cuotas
     Codigo_Prestamo INT NOT NULL,
     Importe INT NOT NULL,
     Fecha DATE NOT NULL,
-    FOREIGN KEY (Codigo_Prestamo) REFERENCES prestamos_banco
+    FOREIGN KEY (Codigo_Prestamo) REFERENCES prestamos_banco ON DELETE CASCADE
 );
 
 CREATE TABLE backup
