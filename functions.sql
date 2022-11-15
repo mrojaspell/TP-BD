@@ -18,7 +18,7 @@ CREATE TABLE prestamos_banco
     Codigo INT NOT NULL,
     Fecha DATE NOT NULL,
     Codigo_Cliente INT NOT NULL,
-    Importe INT NOT NULL CHECK ( Importe > 0 ),
+    Importe FLOAT NOT NULL CHECK ( Importe > 0 ),
     PRIMARY KEY (Codigo),
     FOREIGN KEY (Codigo_Cliente) REFERENCES clientes_banco ON DELETE CASCADE ON UPDATE RESTRICT
 );
@@ -27,7 +27,7 @@ CREATE TABLE pagos_cuotas
 (
     Nro_Cuota INT NOT NULL,
     Codigo_Prestamo INT NOT NULL,
-    Importe INT NOT NULL CHECK (Importe > 0),
+    Importe FLOAT NOT NULL CHECK (Importe > 0),
     Fecha DATE NOT NULL,
     FOREIGN KEY (Codigo_Prestamo) REFERENCES prestamos_banco ON DELETE CASCADE ON UPDATE RESTRICT
 );
@@ -37,10 +37,10 @@ CREATE TABLE backup
     ENTRADA INT NOT NULL,
     DNI INT NOT NULL,
     NOMBRE TEXT NOT NULL,
-    TELEFONO INT NOT NULL,
+    TELEFONO TEXT NOT NULL,
     CANT_PRESTAMOS INT NOT NULL,
-    MONTO_PRESTAMOS INT NOT NULL,
-    MONTO_PAGO_CUOTAS INT,
+    MONTO_PRESTAMOS FLOAT NOT NULL,
+    MONTO_PAGO_CUOTAS FLOAT,
     IND_PAGOS_PENDIENTES BOOLEAN NOT NULL,
     PRIMARY KEY (ENTRADA)
 );
@@ -60,6 +60,7 @@ psql -h bd1.it.itba.edu.ar -U nombre PROOF
 
 
 /* Pto D: TRIGGER */
+DROP SEQUENCE IF EXISTS backupID;
 CREATE SEQUENCE backupID
     START WITH 1
     INCREMENT BY 1;
@@ -72,11 +73,11 @@ $$
     DECLARE
         ENTRADA INT;
         DNI INT;
-        NOMBRE  VARCHAR(36);
-        TELEFONO    VARCHAR(18);
+        NOMBRE  TEXT;
+        TELEFONO    TEXT;
         CANT_PRESTAMOS  INT := 0;
-        MONTO_PRESTAMOS INT  := 0;
-        MONTO_PAGO_CUENTAS   INT  := 0;
+        MONTO_PRESTAMOS FLOAT  := 0;
+        MONTO_PAGO_CUOTAS   FLOAT  := 0;
 
         pago RECORD;
         prestamo RECORD;
@@ -88,7 +89,7 @@ $$
             SELECT pr.importe, pr.codigo FROM prestamos_banco pr WHERE pr.codigo_cliente=OLD.Codigo;
 
         BEGIN
-        ENTRADA=nextval(backupID);
+        ENTRADA=nextval('backupID');
         DNI=OLD.Dni;
         NOMBRE=OLD.Nombre;
         TELEFONO=OLD.telefono;
@@ -106,14 +107,14 @@ $$
                 FETCH cPago INTO pago;
                 EXIT WHEN NOT FOUND;
 
-                MONTO_PAGO_CUENTAS= MONTO_PAGO_CUENTAS+ pago.importe;
+                MONTO_PAGO_CUOTAS= MONTO_PAGO_CUOTAS+ pago.importe;
 
             END LOOP;
             CLOSE cPago;
         END LOOP;
         CLOSE cPrestamo;
 
-        INSERT INTO backup values(DNI, NOMBRE, TELEFONO, CANT_PRESTAMOS, MONTO_PRESTAMOS, MONTO_PAGO_CUOTAS, MONTO_PAGO_CUOTAS< MONTO_PRESTAMOS);
+        INSERT INTO backup values(ENTRADA, DNI, NOMBRE, TELEFONO, CANT_PRESTAMOS, MONTO_PRESTAMOS, MONTO_PAGO_CUOTAS, MONTO_PAGO_CUOTAS< MONTO_PRESTAMOS);
         RETURN OLD;
     END
 
