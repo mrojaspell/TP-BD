@@ -1,3 +1,5 @@
+/* Pto. A: Creación de las tablas que alojarán los datos de los archivos. */
+
 DROP TABLE IF EXISTS pagos_cuotas;
 DROP TABLE IF EXISTS prestamos_banco;
 DROP TABLE IF EXISTS clientes_banco;
@@ -32,27 +34,34 @@ CREATE TABLE pagos_cuotas
     FOREIGN KEY (Codigo_Prestamo) REFERENCES prestamos_banco ON DELETE CASCADE ON UPDATE RESTRICT
 );
 
+/* Pto B: Creación de la tabla de backup.*/
+
 CREATE TABLE backup
 (
     ENTRADA INT NOT NULL,
-    DNI INT NOT NULL,
+    DNI INT NOT NULL CHECK ( DNI > 0 ),
     NOMBRE TEXT NOT NULL,
     TELEFONO TEXT NOT NULL,
-    CANT_PRESTAMOS INT NOT NULL,
-    MONTO_PRESTAMOS FLOAT NOT NULL,
-    MONTO_PAGO_CUOTAS FLOAT,
+    CANT_PRESTAMOS INT NOT NULL CHECK ( CANT_PRESTAMOS >= 0 ),
+    MONTO_PRESTAMOS FLOAT NOT NULL CHECK ( MONTO_PRESTAMOS >= 0 ),
+    MONTO_PAGO_CUOTAS FLOAT CHECK ( MONTO_PAGO_CUOTAS >= 0 ),
     IND_PAGOS_PENDIENTES BOOLEAN NOT NULL,
     PRIMARY KEY (ENTRADA)
 );
+
 /*
+Pto C: Importación de los datos
 
-para correr estos es necesesario llevar los archivos .csv a pampero
+Para correr estos es necesesario llevar los archivos .csv a Pampero mediante el comando scp
+(Paso a paso detallado en el informe)
 
-
+Conectarse a Pampero mediante:
 ssh nombre@pampero.itba.edu.ar
+
+Conectarse a PROOF:
 psql -h bd1.it.itba.edu.ar -U nombre PROOF
 
-
+Importar los datos con los siguientes comandos:
 \COPY clientes_banco FROM './clientes_banco.csv' DELIMITER ',' CSV HEADER;
 \COPY prestamos_banco FROM './prestamos_banco.csv' DELIMITER ',' CSV HEADER;
 \COPY pagos_cuotas FROM './pagos_cuotas.csv' DELIMITER ',' CSV HEADER;
@@ -60,6 +69,7 @@ psql -h bd1.it.itba.edu.ar -U nombre PROOF
 
 
 /* Pto D: TRIGGER */
+
 DROP SEQUENCE IF EXISTS backupID;
 CREATE SEQUENCE backupID
     START WITH 1
